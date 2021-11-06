@@ -11,9 +11,9 @@ enum Token {
     tok_num = -5,
 };
 
-static std::string IdentStr;
-static double NumVal;
-static int CurTok;
+static std::string identStr;
+static double numVal;
+static int curTok;
 
 static int getToken();
 static int getNextToken();

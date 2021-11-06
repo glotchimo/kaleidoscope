@@ -1,44 +1,50 @@
 #include "Parser.hpp"
 
 static ExprAST *ParseNumExpr() {
-    ExprAST *Result = new NumberExprAST(NumVal);
+    ExprAST *result = new NumberExprAST(numVal);
     getNextToken();
-    return Result;
+    return result;
 }
 
 static ExprAST *ParseParenExpr() {
     getNextToken();
-    ExprAST *V = ParseExpression();
-    if (!V)
-        return 0;
+    ExprAST *expr = ParseExpression();
 
-    if (CurTok != ')')
+    if (!expr) {
+        return 0;
+    }
+
+    if (curTok != ')') {
         return Error("expected ')'");
+    }
 
     getNextToken();
-    return V;
+    return expr;
 }
 
 static ExprAST *ParseIdentExpr() {
-    std::string IdentName = IdentStr;
+    std::string identName = identStr;
 
     getNextToken();
-    if (CurTok != '(')
-        return new VariableExprAST(IdentName);
+    if (curTok != '(') {
+        return new VariableExprAST(identName);
+    }
 
     getNextToken();
-    std::vector<ExprAST *> Args;
-    if (CurTok != ')') {
+    std::vector<ExprAST *> args;
+    if (curTok != ')') {
         while (1) {
-            ExprAST *Arg = ParseExpression();
-            if (!Arg)
+            ExprAST *arg = ParseExpression();
+            if (!arg) {
                 return 0;
-            Args.push_back(Arg);
+            }
+            args.push_back(arg);
 
-            if (CurTok == ')')
+            if (curTok == ')') {
                 break;
-            else if (CurTok != ',')
+            } else if (curTok != ',') {
                 return Error("Expected ')' or ',' in argument list");
+            }
 
             getNextToken();
         }
@@ -46,11 +52,11 @@ static ExprAST *ParseIdentExpr() {
 
     getNextToken();
 
-    return new CallExprAST(IdentName, Args);
+    return new CallExprAST(identName, args);
 }
 
 static ExprAST *ParsePrimary() {
-    switch (CurTok) {
+    switch (curTok) {
     case tok_ident:
         return ParseIdentExpr();
     case tok_num:
