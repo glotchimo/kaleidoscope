@@ -1,14 +1,21 @@
-#include "Parser.hpp"
+#include "parser.hpp"
 
-static ExprAST *ParseNumExpr() {
+static ExprAST *parseExpression() {
+    ExprAST *lhs = parseEntry();
+    if (!lhs) {
+        return 0;
+    }
+}
+
+static ExprAST *parseNumExpr() {
     ExprAST *result = new NumberExprAST(numVal);
     getNextToken();
     return result;
 }
 
-static ExprAST *ParseParenExpr() {
+static ExprAST *parseParenExpr() {
     getNextToken();
-    ExprAST *expr = ParseExpression();
+    ExprAST *expr = parseExpression();
 
     if (!expr) {
         return 0;
@@ -22,7 +29,7 @@ static ExprAST *ParseParenExpr() {
     return expr;
 }
 
-static ExprAST *ParseIdentExpr() {
+static ExprAST *parseIdentExpr() {
     std::string identName = identStr;
 
     getNextToken();
@@ -34,7 +41,7 @@ static ExprAST *ParseIdentExpr() {
     std::vector<ExprAST *> args;
     if (curTok != ')') {
         while (1) {
-            ExprAST *arg = ParseExpression();
+            ExprAST *arg = parseExpression();
             if (!arg) {
                 return 0;
             }
@@ -55,14 +62,14 @@ static ExprAST *ParseIdentExpr() {
     return new CallExprAST(identName, args);
 }
 
-static ExprAST *ParsePrimary() {
+static ExprAST *parseEntry() {
     switch (curTok) {
     case tok_ident:
-        return ParseIdentExpr();
+        return parseIdentExpr();
     case tok_num:
-        return ParseNumExpr();
+        return parseNumExpr();
     case '(':
-        return ParseParenExpr();
+        return parseParenExpr();
     default:
         return Error("unknown token when expecting an expression");
     }

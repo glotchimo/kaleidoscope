@@ -1,4 +1,4 @@
-#include "AST.hpp"
+#include "ast.hpp"
 
 ExprAST *Error(const char *Str) {
     fprintf(stderr, "Error: %s\n", Str);

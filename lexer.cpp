@@ -1,4 +1,4 @@
-#include "Lexer.hpp"
+#include "lexer.hpp"
 
 static int getToken() {
     static int lastChar = ' ';
