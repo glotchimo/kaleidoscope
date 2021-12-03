@@ -3,7 +3,7 @@
 
 #include <string>
 
-enum Token {
+enum token {
     tok_eof = -1,
     tok_def = -2,
     tok_extern = -3,
@@ -11,11 +11,11 @@ enum Token {
     tok_num = -5,
 };
 
-static std::string identStr;
-static double numVal;
-static int curTok;
+static std::string ident_str;
+static double num_val;
+static int cur_tok;
 
-static int getToken();
-static int getNextToken();
+static int get_token();
+static int get_next_token();
 
-#endif // KALEIDOSCOPE_LEXER_H
+#endif  // KALEIDOSCOPE_LEXER_H

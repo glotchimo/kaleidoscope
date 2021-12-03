@@ -5,59 +5,59 @@
 #include <string>
 #include <vector>
 
-class ExprAST {
+class expr_ast {
    public:
-    virtual ~ExprAST() {}
+    virtual ~expr_ast() {}
 };
 
-class NumberExprAST : public ExprAST {
-    double Val;
+class expr_ast_number : public expr_ast {
+    double value;
 
    public:
-    NumberExprAST(double val) : Val(val) {}
+    expr_ast_number(double val) : value(val) {}
 };
 
-class VariableExprAST : public ExprAST {
-    std::string Name;
+class expr_ast_variable : public expr_ast {
+    std::string name;
 
    public:
-    VariableExprAST(const std::string &name) : Name(name) {}
+    expr_ast_variable(const std::string &name) : name(name) {}
 };
 
-class BinaryExprAST : public ExprAST {
-    char Op;
-    ExprAST *LHS, *RHS;
+class expr_ast_binary : public expr_ast {
+    char op;
+    expr_ast *lhs, *rhs;
 
    public:
-    BinaryExprAST(char op, ExprAST *lhs, ExprAST *rhs) : Op(op), LHS(lhs), RHS(rhs) {}
+    expr_ast_binary(char op, expr_ast *lhs, expr_ast *rhs) : op(op), lhs(lhs), rhs(rhs) {}
 };
 
-class CallExprAST : public ExprAST {
-    std::string Callee;
-    std::vector<ExprAST *> Args;
+class expr_ast_call : public expr_ast {
+    std::string callee;
+    std::vector<expr_ast *> args;
 
    public:
-    CallExprAST(const std::string &callee, std::vector<ExprAST *> &args) : Callee(callee), Args(args) {}
+    expr_ast_call(const std::string &callee, std::vector<expr_ast *> &args) : callee(callee), args(args) {}
 };
 
-class PrototypeAST {
-    std::string Name;
-    std::vector<std::string> Args;
+class proto_ast {
+    std::string name;
+    std::vector<std::string> args;
 
    public:
-    PrototypeAST(const std::string &name, const std::vector<std::string> &args) : Name(name), Args(args) {}
+    proto_ast(const std::string &name, const std::vector<std::string> &args) : name(name), args(args) {}
 };
 
-class FunctionAST {
-    PrototypeAST *Proto;
-    ExprAST *Body;
+class func_ast {
+    proto_ast *proto;
+    expr_ast *body;
 
    public:
-    FunctionAST(PrototypeAST *proto, ExprAST *body) : Proto(proto), Body(body) {}
+    func_ast(proto_ast *proto, expr_ast *body) : proto(proto), body(body) {}
 };
 
-std::unique_ptr<ExprAST> Error(const char *Str);
-std::unique_ptr<PrototypeAST> ErrorP(const char *Str);
-std::unique_ptr<FunctionAST> ErrorF(const char *Str);
+std::unique_ptr<expr_ast> error_expr(const char *Str);
+std::unique_ptr<proto_ast> error_proto(const char *Str);
+std::unique_ptr<func_ast> error_func(const char *Str);
 
 #endif  // KALEIDOSCOPE_AST_H

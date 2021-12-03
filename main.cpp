@@ -6,8 +6,8 @@
 #include "parser.hpp"
 
 int main() {
-    binOpPrecedence['<'] = 10;
-    binOpPrecedence['+'] = 20;
-    binOpPrecedence['-'] = 20;
-    binOpPrecedence['*'] = 40;
+    bin_op_precedence['<'] = 10;
+    bin_op_precedence['+'] = 20;
+    bin_op_precedence['-'] = 20;
+    bin_op_precedence['*'] = 40;
 }

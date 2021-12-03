@@ -1,24 +1,24 @@
 #include "lexer.hpp"
 
-static int getToken() {
-    static int lastChar = ' ';
+static int get_token() {
+    static int last_char = ' ';
 
     // eat whitespace
-    while (isspace(lastChar)) {
-        lastChar = getchar();
+    while (isspace(last_char)) {
+        last_char = getchar();
     }
 
     // parse for identifier or keywords (def, extern)
-    if (isalpha(lastChar)) {
-        identStr = lastChar;
+    if (isalpha(last_char)) {
+        ident_str = last_char;
 
-        while (isalnum(lastChar = getchar())) {
-            identStr += lastChar;
+        while (isalnum(last_char = getchar())) {
+            ident_str += last_char;
         }
 
-        if (identStr == "def") {
+        if (ident_str == "def") {
             return tok_def;
-        } else if (identStr == "extern") {
+        } else if (ident_str == "extern") {
             return tok_extern;
         } else {
             return tok_ident;
@@ -26,44 +26,44 @@ static int getToken() {
     }
 
     // parse for numeric literals
-    else if (isdigit(lastChar || lastChar == '.')) {
-        std::string numStr;
+    else if (isdigit(last_char || last_char == '.')) {
+        std::string num_str;
 
         do {
-            numStr += lastChar;
-            lastChar = getchar();
-        } while (isdigit(lastChar || lastChar == '.'));
+            num_str += last_char;
+            last_char = getchar();
+        } while (isdigit(last_char || last_char == '.'));
 
-        numVal = strtod(numStr.c_str(), 0);
+        num_val = strtod(num_str.c_str(), 0);
 
         return tok_num;
     }
 
     // eat comments
-    else if (lastChar == '#') {
+    else if (last_char == '#') {
         do {
-            lastChar = getchar();
-        } while (lastChar != EOF && lastChar != '\n' && lastChar != '\r');
+            last_char = getchar();
+        } while (last_char != EOF && last_char != '\n' && last_char != '\r');
 
-        if (lastChar != EOF) {
-            return getToken();
+        if (last_char != EOF) {
+            return get_token();
         }
     }
 
     // parse end-of-file characters
-    else if (lastChar == EOF) {
+    else if (last_char == EOF) {
         return tok_eof;
     }
 
     // default parse continuation
     else {
-        int ThisChar = lastChar;
-        lastChar = getchar();
+        int this_char = last_char;
+        last_char = getchar();
 
-        return ThisChar;
+        return this_char;
     }
 }
 
-static int getNextToken() {
-    return curTok = getToken();
+static int get_next_token() {
+    return cur_tok = get_token();
 }
