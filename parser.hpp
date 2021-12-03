@@ -1,14 +1,19 @@
 #if !defined(KALEIDOSCOPE_PARSER_H)
 #define KALEIDOSCOPE_PARSER_H
 
+#include <map>
+#include <memory>
+
 #include "ast.hpp"
 #include "lexer.hpp"
 
-static ExprAST *parseExpression();
-static ExprAST *parseNumExpr();
-static ExprAST *parseParenExpr();
-static ExprAST *parseIdentExpr();
-static ExprAST *parseBinOpRHS();
-static ExprAST *parseEntry();
+static std::map<char, int> binOpPrecedence;
 
-#endif // KALEIDOSCOPE_PARSER_H
+static std::unique_ptr<ExprAST> parseExpression();
+static std::unique_ptr<ExprAST> parseNumExpr();
+static std::unique_ptr<ExprAST> parseParenExpr();
+static std::unique_ptr<ExprAST> parseIdentExpr();
+static std::unique_ptr<ExprAST> parseBinOpRHS(int exprPrecedence, std::unique_ptr<ExprAST> LHS);
+static std::unique_ptr<ExprAST> parseEntry();
+
+#endif  // KALEIDOSCOPE_PARSER_H

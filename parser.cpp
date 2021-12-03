@@ -1,21 +1,34 @@
 #include "parser.hpp"
 
-static ExprAST *parseExpression() {
-    ExprAST *lhs = parseEntry();
+static int getTokenPrecedence() {
+    if (!isascii(curTok)) {
+        return -1;
+    }
+
+    int tokenPrecedence = binOpPrecedence[curTok];
+    if (tokenPrecedence <= 0) {
+        return -1;
+    }
+
+    return tokenPrecedence;
+}
+
+static std::unique_ptr<ExprAST> parseExpression() {
+    auto lhs = parseEntry();
     if (!lhs) {
         return 0;
     }
 }
 
-static ExprAST *parseNumExpr() {
-    ExprAST *result = new NumberExprAST(numVal);
+static std::unique_ptr<ExprAST> parseNumExpr() {
+    std::unique_ptr<ExprAST> result(new NumberExprAST(numVal));
     getNextToken();
     return result;
 }
 
-static ExprAST *parseParenExpr() {
+static std::unique_ptr<ExprAST> parseParenExpr() {
     getNextToken();
-    ExprAST *expr = parseExpression();
+    std::unique_ptr<ExprAST> expr = parseExpression();
 
     if (!expr) {
         return 0;
@@ -29,19 +42,20 @@ static ExprAST *parseParenExpr() {
     return expr;
 }
 
-static ExprAST *parseIdentExpr() {
+static std::unique_ptr<ExprAST> parseIdentExpr() {
     std::string identName = identStr;
 
     getNextToken();
     if (curTok != '(') {
-        return new VariableExprAST(identName);
+        std::unique_ptr<ExprAST> expr(new VariableExprAST(identName));
+        return expr;
     }
 
     getNextToken();
-    std::vector<ExprAST *> args;
+    std::vector<std::unique_ptr<ExprAST> > args;
     if (curTok != ')') {
         while (1) {
-            ExprAST *arg = parseExpression();
+            std::unique_ptr<ExprAST> arg = parseExpression();
             if (!arg) {
                 return 0;
             }
@@ -59,18 +73,36 @@ static ExprAST *parseIdentExpr() {
 
     getNextToken();
 
-    return new CallExprAST(identName, args);
+    std::unique_ptr<ExprAST> expr(new CallExprAST(identName, args));
+    return expr;
 }
 
-static ExprAST *parseEntry() {
+static std::unique_ptr<ExprAST> parseBinOpRHS(int exprPrecedence, std::unique_ptr<ExprAST> LHS) {
+    while (1) {
+        int tokPrecedence = getTokenPrecedence();
+        if (tokPrecedence > exprPrecedence) {
+            return LHS;
+        }
+
+        int binOp = curTok;
+        getNextToken();
+
+        auto RHS = parseEntry();
+        if (!RHS) {
+            return nullptr;
+        }
+    }
+}
+
+static std::unique_ptr<ExprAST> parseEntry() {
     switch (curTok) {
-    case tok_ident:
-        return parseIdentExpr();
-    case tok_num:
-        return parseNumExpr();
-    case '(':
-        return parseParenExpr();
-    default:
-        return Error("unknown token when expecting an expression");
+        case tok_ident:
+            return parseIdentExpr();
+        case tok_num:
+            return parseNumExpr();
+        case '(':
+            return parseParenExpr();
+        default:
+            return Error("unknown token when expecting an expression");
     }
 }
