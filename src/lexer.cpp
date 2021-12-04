@@ -1,10 +1,10 @@
 #include "lexer.hpp"
 
-std::string ident_str;
-double num_val;
-int cur_tok;
+std::string identStr;
+double numVal;
+int curToken;
 
-int get_token() {
+int getToken() {
   static int last_char = ' ';
 
   // eat whitespace
@@ -14,18 +14,18 @@ int get_token() {
 
   // parse for identifier or keywords (def, extern)
   if (isalpha(last_char)) {
-    ident_str = last_char;
+    identStr = last_char;
 
     while (isalnum(last_char = getchar())) {
-      ident_str += last_char;
+      identStr += last_char;
     }
 
-    if (ident_str == "def") {
-      return tok_def;
-    } else if (ident_str == "extern") {
-      return tok_extern;
+    if (identStr == "def") {
+      return tokDef;
+    } else if (identStr == "extern") {
+      return tokExtern;
     } else {
-      return tok_ident;
+      return tokIdent;
     }
   }
 
@@ -38,9 +38,9 @@ int get_token() {
       last_char = getchar();
     } while (isdigit(last_char || last_char == '.'));
 
-    num_val = strtod(num_str.c_str(), 0);
+    numVal = strtod(num_str.c_str(), 0);
 
-    return tok_num;
+    return tokNum;
   }
 
   // eat comments
@@ -50,13 +50,13 @@ int get_token() {
     } while (last_char != EOF && last_char != '\n' && last_char != '\r');
 
     if (last_char != EOF) {
-      return get_token();
+      return getToken();
     }
   }
 
   // parse end-of-file characters
   else if (last_char == EOF) {
-    return tok_eof;
+    return tokEOF;
   }
   int this_char = last_char;
   last_char = getchar();
@@ -64,4 +64,4 @@ int get_token() {
   return this_char;
 }
 
-int get_next_token() { return cur_tok = get_token(); }
+int getNextToken() { return curToken = getToken(); }

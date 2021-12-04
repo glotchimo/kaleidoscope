@@ -3,19 +3,19 @@
 
 #include <string>
 
-enum token {
-  tok_eof = -1,
-  tok_def = -2,
-  tok_extern = -3,
-  tok_ident = -4,
-  tok_num = -5,
+enum Token {
+  tokEOF = -1,
+  tokDef = -2,
+  tokExtern = -3,
+  tokIdent = -4,
+  tokNum = -5,
 };
 
-extern std::string ident_str;
-extern double num_val;
-extern int cur_tok;
+extern std::string identStr;
+extern double numVal;
+extern int curToken;
 
-int get_token();
-int get_next_token();
+int getToken();
+int getNextToken();
 
 #endif // KALEIDOSCOPE_LEXER_H

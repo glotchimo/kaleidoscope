@@ -5,60 +5,60 @@
 #include "lexer.hpp"
 #include "parser.hpp"
 
-static void handle_def() {
-  if (parse_def()) {
+static void handleDef() {
+  if (parseDef()) {
     fprintf(stderr, "Parsed a function definition\n");
   } else {
-    get_next_token();
+    getNextToken();
   }
 }
 
-static void handle_extern() {
-  if (parse_extern()) {
+static void handleExtern() {
+  if (parseExtern()) {
     fprintf(stderr, "Parsed an extern\n");
   } else {
-    get_next_token();
+    getNextToken();
   }
 }
 
-static void handle_top_level_expr() {
-  if (parse_top_level_expr()) {
+static void handleTopLevelExpr() {
+  if (parseTopLevelExpr()) {
     fprintf(stderr, "Parsed a top-level expression\n");
   } else {
-    get_next_token();
+    getNextToken();
   }
 }
 
 static void loop() {
   while (1) {
     fprintf(stderr, "kaleidoscope> ");
-    switch (cur_tok) {
-    case tok_eof:
+    switch (curToken) {
+    case tokEOF:
       return;
     case ';':
-      get_next_token();
+      getNextToken();
       break;
-    case tok_def:
-      handle_def();
+    case tokDef:
+      handleDef();
       break;
-    case tok_extern:
-      handle_extern();
+    case tokExtern:
+      handleExtern();
       break;
     default:
-      handle_top_level_expr();
+      handleTopLevelExpr();
       break;
     }
   }
 }
 
 int main() {
-  bin_op_precedence['<'] = 10;
-  bin_op_precedence['+'] = 20;
-  bin_op_precedence['-'] = 20;
-  bin_op_precedence['*'] = 40;
+  binOpPrecedence['<'] = 10;
+  binOpPrecedence['+'] = 20;
+  binOpPrecedence['-'] = 20;
+  binOpPrecedence['*'] = 40;
 
   fprintf(stderr, "kaleidoscope> ");
-  get_next_token();
+  getNextToken();
 
   loop();
 

@@ -7,21 +7,21 @@
 #include "ast.hpp"
 #include "lexer.hpp"
 
-extern std::map<char, int> bin_op_precedence;
+extern std::map<char, int> binOpPrecedence;
 
-std::unique_ptr<expr_ast> parse_expr();
-std::unique_ptr<expr_ast> parse_expr_entry();
-std::unique_ptr<expr_ast> parse_expr_num();
-std::unique_ptr<expr_ast> parse_expr_paren();
-std::unique_ptr<expr_ast> parse_expr_ident();
+std::unique_ptr<ExprAST> parseExpr();
+std::unique_ptr<ExprAST> parseEntryExpr();
+std::unique_ptr<ExprAST> parseNumExpr();
+std::unique_ptr<ExprAST> parseParenExpr();
+std::unique_ptr<ExprAST> parseIdentExpr();
 
-std::unique_ptr<expr_ast> parse_bin_op_rhs(int expr_precedence,
-                                           std::unique_ptr<expr_ast> lhs);
+std::unique_ptr<ExprAST> parseBinOpRHS(int exprPrecedence,
+                                       std::unique_ptr<ExprAST> lhs);
 
-std::unique_ptr<proto_ast> parse_proto();
-std::unique_ptr<proto_ast> parse_extern();
+std::unique_ptr<ProtoAST> parseProto();
+std::unique_ptr<ProtoAST> parseExtern();
 
-std::unique_ptr<func_ast> parse_def();
-std::unique_ptr<func_ast> parse_top_level_expr();
+std::unique_ptr<FuncAST> parseDef();
+std::unique_ptr<FuncAST> parseTopLevelExpr();
 
 #endif // KALEIDOSCOPE_PARSER_H

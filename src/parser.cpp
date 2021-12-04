@@ -1,172 +1,172 @@
 #include "parser.hpp"
 
-std::map<char, int> bin_op_precedence;
+std::map<char, int> binOpPrecedence;
 
-int get_token_precedence() {
-  if (!isascii(cur_tok)) {
+int getTokenPrecedence() {
+  if (!isascii(curToken)) {
     return -1;
   }
 
-  int token_precedence = bin_op_precedence[cur_tok];
-  if (token_precedence <= 0) {
+  int tokenPrecedence = binOpPrecedence[curToken];
+  if (tokenPrecedence <= 0) {
     return -1;
   }
 
-  return token_precedence;
+  return tokenPrecedence;
 }
 
-std::unique_ptr<expr_ast> parse_expr() {
-  auto lhs = parse_expr_entry();
+std::unique_ptr<ExprAST> parseExpr() {
+  auto lhs = parseEntryExpr();
   if (!lhs) {
     return nullptr;
   }
 
-  return parse_bin_op_rhs(0, std::move(lhs));
+  return parseBinOpRHS(0, std::move(lhs));
 }
 
-std::unique_ptr<expr_ast> parse_expr_entry() {
-  switch (cur_tok) {
-  case tok_ident:
-    return parse_expr_ident();
-  case tok_num:
-    return parse_expr_num();
+std::unique_ptr<ExprAST> parseEntryExpr() {
+  switch (curToken) {
+  case tokIdent:
+    return parseIdentExpr();
+  case tokNum:
+    return parseNumExpr();
   case '(':
-    return parse_expr_paren();
+    return parseParenExpr();
   default:
-    return error_expr("unknown token when expecting an expression");
+    return logExprErr("unknown Token when expecting an expression");
   }
 }
 
-std::unique_ptr<expr_ast> parse_expr_num() {
-  auto result = std::make_unique<expr_ast_number>(num_val);
-  get_next_token();
+std::unique_ptr<ExprAST> parseNumExpr() {
+  auto result = std::make_unique<ExprASTNumber>(numVal);
+  getNextToken();
   return std::move(result);
 }
 
-std::unique_ptr<expr_ast> parse_expr_paren() {
-  get_next_token();
-  auto expr = parse_expr();
+std::unique_ptr<ExprAST> parseParenExpr() {
+  getNextToken();
+  auto expr = parseExpr();
   if (!expr) {
     return nullptr;
   }
 
-  if (cur_tok != ')') {
-    return error_expr("expected ')'");
+  if (curToken != ')') {
+    return logExprErr("expected ')'");
   }
 
-  get_next_token();
+  getNextToken();
   return expr;
 }
 
-std::unique_ptr<expr_ast> parse_expr_ident() {
-  std::string ident_name = ident_str;
+std::unique_ptr<ExprAST> parseIdentExpr() {
+  std::string identName = identStr;
 
-  get_next_token();
-  if (cur_tok != '(') {
-    return std::make_unique<expr_ast_variable>(ident_name);
+  getNextToken();
+  if (curToken != '(') {
+    return std::make_unique<ExprASTVariable>(identName);
   }
 
-  get_next_token();
-  std::vector<std::unique_ptr<expr_ast>> args;
-  if (cur_tok != ')') {
+  getNextToken();
+  std::vector<std::unique_ptr<ExprAST>> args;
+  if (curToken != ')') {
     while (1) {
-      if (auto arg = parse_expr()) {
+      if (auto arg = parseExpr()) {
         args.push_back(std::move(arg));
       } else {
         return nullptr;
       }
 
-      if (cur_tok == ')') {
+      if (curToken == ')') {
         break;
-      } else if (cur_tok != ',') {
-        return error_expr("Expected ')' or ',' in argument list");
+      } else if (curToken != ',') {
+        return logExprErr("Expected ')' or ',' in argument list");
       }
 
-      get_next_token();
+      getNextToken();
     }
   }
 
-  get_next_token();
-  return std::make_unique<expr_ast_call>(ident_name, std::move(args));
+  getNextToken();
+  return std::make_unique<ExprASTCall>(identName, std::move(args));
 }
 
-std::unique_ptr<expr_ast> parse_bin_op_rhs(int expr_precedence,
-                                           std::unique_ptr<expr_ast> lhs) {
+std::unique_ptr<ExprAST> parseBinOpRHS(int exprPrecedence,
+                                       std::unique_ptr<ExprAST> lhs) {
   while (1) {
-    int tok_precedence = get_token_precedence();
-    if (tok_precedence > expr_precedence) {
+    int tokenPrecedence = getTokenPrecedence();
+    if (tokenPrecedence > exprPrecedence) {
       return lhs;
     }
 
-    int bin_op = cur_tok;
-    get_next_token();
+    int bin_op = curToken;
+    getNextToken();
 
-    auto rhs = parse_expr_entry();
+    auto rhs = parseEntryExpr();
     if (!rhs) {
       return nullptr;
     }
 
-    int next_precedence = get_token_precedence();
-    if (tok_precedence < next_precedence) {
-      rhs = parse_bin_op_rhs(++tok_precedence, std::move(rhs));
+    int nextPrecedence = getTokenPrecedence();
+    if (tokenPrecedence < nextPrecedence) {
+      rhs = parseBinOpRHS(++tokenPrecedence, std::move(rhs));
       if (!rhs) {
         return nullptr;
       }
     }
 
-    lhs = std::make_unique<expr_ast_binary>(bin_op, std::move(lhs),
-                                            std::move(rhs));
+    lhs =
+        std::make_unique<ExprASTBinary>(bin_op, std::move(lhs), std::move(rhs));
   }
 }
 
-std::unique_ptr<proto_ast> parse_proto() {
-  if (cur_tok != tok_ident) {
-    return error_proto("Expected function name in prototype");
+std::unique_ptr<ProtoAST> parseProto() {
+  if (curToken != tokIdent) {
+    return logProtoErr("Expected function name in prototype");
   }
 
-  std::string func_name = ident_str;
-  get_next_token();
+  std::string func_name = identStr;
+  getNextToken();
 
-  if (cur_tok != '(') {
-    return error_proto("Expected ')' in prototype");
+  if (curToken != '(') {
+    return logProtoErr("Expected ')' in prototype");
   }
 
-  std::vector<std::string> arg_names;
-  while (get_next_token() == tok_ident) {
-    arg_names.push_back(ident_str);
+  std::vector<std::string> argNames;
+  while (getNextToken() == tokIdent) {
+    argNames.push_back(identStr);
   }
 
-  if (cur_tok != ')') {
-    return error_proto("Expected ')' in prototype");
+  if (curToken != ')') {
+    return logProtoErr("Expected ')' in prototype");
   }
 
-  get_next_token();
-  return std::make_unique<proto_ast>(func_name, std::move(arg_names));
+  getNextToken();
+  return std::make_unique<ProtoAST>(func_name, std::move(argNames));
 }
 
-std::unique_ptr<proto_ast> parse_extern() {
-  get_next_token();
-  return parse_proto();
+std::unique_ptr<ProtoAST> parseExtern() {
+  getNextToken();
+  return parseProto();
 }
 
-std::unique_ptr<func_ast> parse_def() {
-  get_next_token();
-  auto proto = parse_proto();
+std::unique_ptr<FuncAST> parseDef() {
+  getNextToken();
+  auto proto = parseProto();
   if (!proto) {
     return nullptr;
   }
 
-  if (auto expr = parse_expr()) {
-    return std::make_unique<func_ast>(std::move(proto), std::move(expr));
+  if (auto expr = parseExpr()) {
+    return std::make_unique<FuncAST>(std::move(proto), std::move(expr));
   }
 
   return nullptr;
 }
 
-std::unique_ptr<func_ast> parse_top_level_expr() {
-  if (auto expr = parse_expr()) {
-    auto proto = std::make_unique<proto_ast>("", std::vector<std::string>());
-    return std::make_unique<func_ast>(std::move(proto), std::move(expr));
+std::unique_ptr<FuncAST> parseTopLevelExpr() {
+  if (auto expr = parseExpr()) {
+    auto proto = std::make_unique<ProtoAST>("", std::vector<std::string>());
+    return std::make_unique<FuncAST>(std::move(proto), std::move(expr));
   }
 
   return nullptr;
