@@ -5,32 +5,51 @@
 #include "lexer.hpp"
 #include "parser.hpp"
 
+static void initModule() {
+  context = std::make_unique<llvm::LLVMContext>();
+  module = std::make_unique<llvm::Module>("kaleidoscope", *context);
+  builder = std::make_unique<llvm::IRBuilder<>>(*context);
+}
+
 static void handleDef() {
-  if (parseDef()) {
-    fprintf(stderr, "Parsed a function definition\n");
+  if (auto fnAST = parseDef()) {
+    if (auto *fnIR = fnAST->codegen()) {
+      fprintf(stderr, "Read function definition:\n\n");
+      fnIR->print(llvm::errs());
+      fprintf(stderr, "\n");
+    }
   } else {
     getNextToken();
   }
 }
 
 static void handleExtern() {
-  if (parseExtern()) {
-    fprintf(stderr, "Parsed an extern\n");
+  if (auto protoAST = parseExtern()) {
+    if (auto *fnIR = protoAST->codegen()) {
+      fprintf(stderr, "Read extern:\n\n");
+      fnIR->print(llvm::errs());
+      fprintf(stderr, "\n");
+    }
   } else {
     getNextToken();
   }
 }
 
 static void handleTopLevelExpr() {
-  if (parseTopLevelExpr()) {
-    fprintf(stderr, "Parsed a top-level expression\n");
+  if (auto fnAST = parseTopLevelExpr()) {
+    if (auto *fnIR = fnAST->codegen()) {
+      fprintf(stderr, "Read top-level expression:\n\n");
+      fnIR->print(llvm::errs());
+      fprintf(stderr, "\n");
+      fnIR->eraseFromParent();
+    }
   } else {
     getNextToken();
   }
 }
 
 static void loop() {
-  while (1) {
+  while (true) {
     fprintf(stderr, "kaleidoscope> ");
     switch (curToken) {
     case tokEOF:
@@ -60,7 +79,11 @@ int main() {
   fprintf(stderr, "kaleidoscope> ");
   getNextToken();
 
+  initModule();
+
   loop();
+
+  module->print(llvm::errs(), nullptr);
 
   return 0;
 }

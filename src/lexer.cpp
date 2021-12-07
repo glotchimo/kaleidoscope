@@ -5,63 +5,58 @@ double numVal;
 int curToken;
 
 int getToken() {
-  static int last_char = ' ';
+  static int lastChar = ' ';
 
   // eat whitespace
-  while (isspace(last_char)) {
-    last_char = getchar();
+  while (isspace(lastChar)) {
+    lastChar = getchar();
   }
 
   // parse for identifier or keywords (def, extern)
-  if (isalpha(last_char)) {
-    identStr = last_char;
+  if (isalpha(lastChar)) {
+    identStr = lastChar;
 
-    while (isalnum(last_char = getchar())) {
-      identStr += last_char;
-    }
+    while (isalnum(lastChar = getchar()))
+      identStr += lastChar;
 
-    if (identStr == "def") {
+    if (identStr == "def")
       return tokDef;
-    } else if (identStr == "extern") {
+    else if (identStr == "extern")
       return tokExtern;
-    } else {
+    else
       return tokIdent;
-    }
   }
 
   // parse for numeric literals
-  else if (isdigit(last_char || last_char == '.')) {
-    std::string num_str;
+  if (isdigit(lastChar) || lastChar == '.') {
+    std::string numStr;
 
     do {
-      num_str += last_char;
-      last_char = getchar();
-    } while (isdigit(last_char || last_char == '.'));
+      numStr += lastChar;
+      lastChar = getchar();
+    } while (isdigit(lastChar) || lastChar == '.');
 
-    numVal = strtod(num_str.c_str(), 0);
-
+    numVal = strtod(numStr.c_str(), nullptr);
     return tokNum;
   }
 
   // eat comments
-  else if (last_char == '#') {
-    do {
-      last_char = getchar();
-    } while (last_char != EOF && last_char != '\n' && last_char != '\r');
+  if (lastChar == '#') {
+    do
+      lastChar = getchar();
+    while (lastChar != EOF && lastChar != '\n' && lastChar != '\r');
 
-    if (last_char != EOF) {
+    if (lastChar != EOF)
       return getToken();
-    }
   }
 
   // parse end-of-file characters
-  else if (last_char == EOF) {
+  if (lastChar == EOF)
     return tokEOF;
-  }
-  int this_char = last_char;
-  last_char = getchar();
 
-  return this_char;
+  int thisChar = lastChar;
+  lastChar = getchar();
+  return thisChar;
 }
 
 int getNextToken() { return curToken = getToken(); }

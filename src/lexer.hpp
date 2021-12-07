@@ -1,4 +1,4 @@
-#ifndef KALEIDOSCOPE_LEXER_H
+#if !defined(KALEIDOSCOPE_LEXER_H)
 #define KALEIDOSCOPE_LEXER_H
 
 #include <string>

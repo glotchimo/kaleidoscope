@@ -26,19 +26,19 @@ std::unique_ptr<ExprAST> parseExpr() {
 
 std::unique_ptr<ExprAST> parseEntryExpr() {
   switch (curToken) {
+  default:
+    return logErr("unknown token when expecting an expression");
   case tokIdent:
     return parseIdentExpr();
   case tokNum:
     return parseNumExpr();
   case '(':
     return parseParenExpr();
-  default:
-    return logExprErr("unknown Token when expecting an expression");
   }
 }
 
 std::unique_ptr<ExprAST> parseNumExpr() {
-  auto result = std::make_unique<ExprASTNumber>(numVal);
+  auto result = std::make_unique<NumberExprAST>(numVal);
   getNextToken();
   return std::move(result);
 }
@@ -51,7 +51,7 @@ std::unique_ptr<ExprAST> parseParenExpr() {
   }
 
   if (curToken != ')') {
-    return logExprErr("expected ')'");
+    return logErr("expected ')'");
   }
 
   getNextToken();
@@ -63,59 +63,54 @@ std::unique_ptr<ExprAST> parseIdentExpr() {
 
   getNextToken();
   if (curToken != '(') {
-    return std::make_unique<ExprASTVariable>(identName);
+    return std::make_unique<VariableExprAST>(identName);
   }
 
   getNextToken();
   std::vector<std::unique_ptr<ExprAST>> args;
   if (curToken != ')') {
-    while (1) {
-      if (auto arg = parseExpr()) {
+    while (true) {
+      if (auto arg = parseExpr())
         args.push_back(std::move(arg));
-      } else {
+      else
         return nullptr;
-      }
 
-      if (curToken == ')') {
+      if (curToken == ')')
         break;
-      } else if (curToken != ',') {
-        return logExprErr("Expected ')' or ',' in argument list");
-      }
+      else if (curToken != ',')
+        return logErr("Expected ')' or ',' in argument list");
 
       getNextToken();
     }
   }
 
   getNextToken();
-  return std::make_unique<ExprASTCall>(identName, std::move(args));
+  return std::make_unique<CallExprAST>(identName, std::move(args));
 }
 
 std::unique_ptr<ExprAST> parseBinOpRHS(int exprPrecedence,
                                        std::unique_ptr<ExprAST> lhs) {
-  while (1) {
+  while (true) {
     int tokenPrecedence = getTokenPrecedence();
-    if (tokenPrecedence > exprPrecedence) {
+    if (tokenPrecedence < exprPrecedence)
       return lhs;
-    }
 
     int bin_op = curToken;
     getNextToken();
 
     auto rhs = parseEntryExpr();
-    if (!rhs) {
+    if (!rhs)
       return nullptr;
-    }
 
     int nextPrecedence = getTokenPrecedence();
     if (tokenPrecedence < nextPrecedence) {
       rhs = parseBinOpRHS(++tokenPrecedence, std::move(rhs));
-      if (!rhs) {
+      if (!rhs)
         return nullptr;
-      }
     }
 
     lhs =
-        std::make_unique<ExprASTBinary>(bin_op, std::move(lhs), std::move(rhs));
+        std::make_unique<BinaryExprAST>(bin_op, std::move(lhs), std::move(rhs));
   }
 }
 

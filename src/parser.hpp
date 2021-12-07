@@ -1,4 +1,4 @@
-#ifndef KALEIDOSCOPE_PARSER_H
+#if !defined(KALEIDOSCOPE_PARSER_H)
 #define KALEIDOSCOPE_PARSER_H
 
 #include <map>
