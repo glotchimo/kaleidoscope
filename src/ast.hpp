@@ -16,6 +16,11 @@
 #include <string>
 #include <vector>
 
+extern std::unique_ptr<llvm::LLVMContext> context;
+extern std::unique_ptr<llvm::IRBuilder<>> builder;
+extern std::unique_ptr<llvm::Module> module;
+extern std::map<std::string, llvm::Value *> namedValues;
+
 class ExprAST {
 public:
   virtual ~ExprAST() {}
@@ -80,11 +85,6 @@ public:
       : proto(std::move(proto)), body(std::move(body)) {}
   llvm::Function *codegen();
 };
-
-extern std::unique_ptr<llvm::LLVMContext> context;
-extern std::unique_ptr<llvm::IRBuilder<>> builder;
-extern std::unique_ptr<llvm::Module> module;
-extern std::map<std::string, llvm::Value *> namedValues;
 
 std::unique_ptr<ExprAST> logErr(const char *Str);
 std::unique_ptr<ProtoAST> logProtoErr(const char *Str);
